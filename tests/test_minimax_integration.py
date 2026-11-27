@@ -22,18 +22,10 @@ class TestMiniMaxIntegration(unittest.TestCase):
     def _import_create_llm(self):
         from unittest.mock import patch, MagicMock
 
-        mock_nltk = MagicMock()
-        mock_nltk.__spec__ = MagicMock()  # transformers checks __spec__ to detect nltk
-
         mock_modules = {
             "whisper": MagicMock(),
             "sounddevice": MagicMock(),
             "numpy": MagicMock(),
-            "torch": MagicMock(),
-            "torchaudio": MagicMock(),
-            "nltk": mock_nltk,
-            "chatterbox": MagicMock(),
-            "chatterbox.tts": MagicMock(),
             "tts": MagicMock(),
         }
         with patch.dict("sys.modules", mock_modules):

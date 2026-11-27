@@ -15,18 +15,10 @@ class TestCreateLlm(unittest.TestCase):
     def _import_create_llm(self):
         """Import create_llm with heavy dependencies mocked out."""
         # Mock heavy imports that aren't needed for testing the factory logic
-        mock_nltk = MagicMock()
-        mock_nltk.__spec__ = MagicMock()  # transformers checks __spec__ to detect nltk
-
         mock_modules = {
             "whisper": MagicMock(),
             "sounddevice": MagicMock(),
             "numpy": MagicMock(),
-            "torch": MagicMock(),
-            "torchaudio": MagicMock(),
-            "nltk": mock_nltk,
-            "chatterbox": MagicMock(),
-            "chatterbox.tts": MagicMock(),
             "tts": MagicMock(),
         }
         with patch.dict("sys.modules", mock_modules):
@@ -156,50 +148,6 @@ class TestCreateLlm(unittest.TestCase):
         create_llm("minimax", api_key="test-key")
         call_kwargs = mock_chat.call_args[1]
         self.assertEqual(call_kwargs["base_url"], "https://api.minimax.io/v1")
-
-
-class TestAnalyzeEmotion(unittest.TestCase):
-    """Tests for the analyze_emotion() helper function."""
-
-    def _import_analyze_emotion(self):
-        mock_modules = {
-            "whisper": MagicMock(),
-            "sounddevice": MagicMock(),
-            "numpy": MagicMock(),
-            "torch": MagicMock(),
-            "torchaudio": MagicMock(),
-            "nltk": MagicMock(),
-            "chatterbox": MagicMock(),
-            "chatterbox.tts": MagicMock(),
-            "tts": MagicMock(),
-        }
-        with patch.dict("sys.modules", mock_modules):
-            with patch("sys.argv", ["app.py"]):
-                if "app" in sys.modules:
-                    del sys.modules["app"]
-                from app import analyze_emotion
-        return analyze_emotion
-
-    def test_neutral_text(self):
-        analyze_emotion = self._import_analyze_emotion()
-        score = analyze_emotion("The weather is nice today.")
-        self.assertAlmostEqual(score, 0.5)
-
-    def test_emotional_text(self):
-        analyze_emotion = self._import_analyze_emotion()
-        score = analyze_emotion("This is amazing! I love it!")
-        self.assertGreater(score, 0.5)
-
-    def test_score_capped_at_max(self):
-        analyze_emotion = self._import_analyze_emotion()
-        # Text with many emotional keywords
-        score = analyze_emotion("amazing terrible love hate excited sad happy angry wonderful awful !")
-        self.assertLessEqual(score, 0.9)
-
-    def test_score_has_minimum(self):
-        analyze_emotion = self._import_analyze_emotion()
-        score = analyze_emotion("ok")
-        self.assertGreaterEqual(score, 0.3)
 
 
 if __name__ == "__main__":
